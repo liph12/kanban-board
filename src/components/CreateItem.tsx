@@ -28,11 +28,13 @@ export default function CreateItem({
   onSubmit,
   item,
   status,
+  saving,
 }: {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSubmit: (status: Status) => void;
   item: Item;
   status: Status;
+  saving: boolean;
 }) {
   const [showDateStart, setShowDateStart] = useState(false);
   const [showDateEnd, setShowDateEnd] = useState(false);
@@ -76,6 +78,7 @@ export default function CreateItem({
       <Grid container spacing={1}>
         <Grid size={{ lg: 6, md: 12, xs: 12 }}>
           <FormHelperText
+            component="div"
             sx={{
               color: grey[600],
               mx: 0,
@@ -95,7 +98,7 @@ export default function CreateItem({
             disabled={!showDateStart}
             type="date"
             fullWidth
-            value={item.startedAt}
+            value={item.startedAt ?? ""}
             sx={{
               ...inputSx,
               "& input::-webkit-calendar-picker-indicator": {
@@ -111,6 +114,7 @@ export default function CreateItem({
         {showDateStart && (
           <Grid size={{ lg: 6, md: 12, xs: 12 }}>
             <FormHelperText
+              component="div"
               sx={{
                 color: grey[600],
                 mx: 0,
@@ -130,7 +134,7 @@ export default function CreateItem({
               disabled={!showDateEnd}
               type="date"
               fullWidth
-              value={item.endedAt}
+              value={item.endedAt ?? ""}
               sx={{
                 ...inputSx,
                 "& input::-webkit-calendar-picker-indicator": {
@@ -154,6 +158,7 @@ export default function CreateItem({
           disableElevation
           size="small"
           startIcon={<SaveRoundedIcon />}
+          loading={saving}
         >
           Save
         </Button>
