@@ -42,28 +42,36 @@ function App() {
     const itemData = {
       ...item,
       date_start: item.startedAt,
-      date_end: item.endedAt
+      date_end: item.endedAt,
     };
 
-   const response = await axios.post("http://localhost:8000/api/v1/tasks", itemData, {
-    headers: {
-      "Content-Type" : "application/json"
-    }
-   });
+    const response = await axios.post(
+      "https://api.taskmastersystem.ph/api/v1/tasks",
+      itemData,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-   console.log(response.data)
-  }
+    console.log(response.data);
+  };
 
   const updateItem = async (id: number, status: Status) => {
-       const response = await axios.put(`http://localhost:8000/api/v1/tasks/${id}`, { status: status }, {
-            headers: {
-              "Content-Type" : "application/json"
-            }
-       });
-       const { data } = response.data;
+    const response = await axios.put(
+      `https://api.taskmastersystem.ph/api/v1/tasks/${id}`,
+      { status: status },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const { data } = response.data;
 
-       console.log(data);
-  }
+    console.log(data);
+  };
 
   const handleSubmitList = async (status: Status) => {
     if (formItem.title === "" || formItem.description === "") {
@@ -114,7 +122,9 @@ function App() {
 
   const updateList = async () => {
     // const jsonList = localStorage.getItem("todoList");
-    const response = await axios.get("http://localhost:8000/api/v1/tasks");
+    const response = await axios.get(
+      "https://api.taskmastersystem.ph/api/v1/tasks"
+    );
     const jsonList = response.data?.data;
 
     setFormItem((prev) => ({
