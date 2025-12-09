@@ -12,3 +12,6 @@ export const getColorStatus = (status: Status) => {
       return "#453e1c";
   }
 };
+
+export const getUserJson = () =>
+  JSON.parse(localStorage.getItem("user") ?? "{}");

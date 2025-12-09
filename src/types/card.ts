@@ -10,4 +10,5 @@ export interface Item {
   status: Status;
   startedAt: Dayjs | null;
   endedAt: Dayjs | null;
+  updatedAt: string | null;
 }
