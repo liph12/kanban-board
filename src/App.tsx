@@ -13,6 +13,7 @@ import CreateItem from "./components/CreateItem";
 import ListCard from "./components/ListCard";
 import type { Status, Item } from "./types/card";
 import { getColorStatus } from "./helpers";
+import axios from "axios";
 
 function App() {
   const [formItem, setFormItem] = useState<Item>({
@@ -37,10 +38,34 @@ function App() {
     }));
   };
 
-  const storeTodoList = (newList: Item[]) =>
-    localStorage.setItem("todoList", JSON.stringify(newList));
+  const storeTodoList = async (item: Item) => {
+    const itemData = {
+      ...item,
+      date_start: item.startedAt,
+      date_end: item.endedAt
+    };
 
-  const handleSubmitList = (status: Status) => {
+   const response = await axios.post("http://localhost:8000/api/v1/tasks", itemData, {
+    headers: {
+      "Content-Type" : "application/json"
+    }
+   });
+
+   console.log(response.data)
+  }
+
+  const updateItem = async (id: number, status: Status) => {
+       const response = await axios.put(`http://localhost:8000/api/v1/tasks/${id}`, { status: status }, {
+            headers: {
+              "Content-Type" : "application/json"
+            }
+       });
+       const { data } = response.data;
+
+       console.log(data);
+  }
+
+  const handleSubmitList = async (status: Status) => {
     if (formItem.title === "" || formItem.description === "") {
       return;
     }
@@ -52,10 +77,10 @@ function App() {
     };
     const updatedList: Item[] = [...todoList, item];
 
-    storeTodoList(updatedList);
-    updateList();
+    await storeTodoList(item);
+    setTodoList(updatedList);
     setFormItem({
-      id: updatedList.length + 1,
+      id: 0,
       title: "",
       description: "",
       status: "pending",
@@ -81,13 +106,16 @@ function App() {
         );
       }
 
-      storeTodoList(updatedList);
+      updateItem(id, status);
+
       return updatedList;
     });
   };
 
-  const updateList = () => {
-    const jsonList = localStorage.getItem("todoList");
+  const updateList = async () => {
+    // const jsonList = localStorage.getItem("todoList");
+    const response = await axios.get("http://localhost:8000/api/v1/tasks");
+    const jsonList = response.data?.data;
 
     setFormItem((prev) => ({
       ...prev,
@@ -96,7 +124,7 @@ function App() {
 
     if (!jsonList) return;
 
-    const list: Item[] = JSON.parse(jsonList);
+    const list: Item[] = jsonList;
 
     list.reverse();
 
@@ -122,7 +150,7 @@ function App() {
           variant="h4"
           fontWeight="bold"
         >
-          LR REPORTING BOARD
+          TASK MASTER
         </Typography>
         <Box
           sx={{
