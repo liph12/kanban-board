@@ -31,7 +31,7 @@ type UserData = {
   email: string;
   mobile: string;
   password: string;
-  newPassword: string;
+  confirmPassword: string;
 };
 
 export default function Profile() {
@@ -50,7 +50,7 @@ export default function Profile() {
     email: user?.email ?? "",
     mobile: user?.mobile_number ?? "",
     password: "",
-    newPassword: "",
+    confirmPassword: "",
   });
   const [saving, setSaving] = useState(false);
   const [notification, setNotification] = useState<NotificationType>({
@@ -126,8 +126,8 @@ export default function Profile() {
       if (userData.password) {
         formData.append("password", userData.password);
       }
-      if (userData.newPassword) {
-        formData.append("new_password", userData.newPassword);
+      if (userData.confirmPassword) {
+        formData.append("confirm_password", userData.confirmPassword);
       }
 
       const response = await axios.post("/update-profile", formData, {
@@ -140,7 +140,7 @@ export default function Profile() {
       const { data } = response.data;
       const updatedUser = { ...data, auth_token: storedUser.auth_token };
 
-      setUserAuth(updatedUser);
+      setUserAuth(updatedUser, false);
       setNotification((prev) => ({
         ...prev,
         open: true,
@@ -352,21 +352,23 @@ export default function Profile() {
                     <Stack spacing={1}>
                       <Typography variant="body2">Password</Typography>
                       <FormControl fullWidth>
-                        <FormHelperText>Current password</FormHelperText>
+                        <FormHelperText>New password</FormHelperText>
                         <CustomTextField
-                          placeholder="Current password"
+                          placeholder="New password"
                           value={userData.password}
                           name="password"
                           onChange={handleChange}
+                          type="passsword"
                         />
                       </FormControl>
                       <FormControl fullWidth>
                         <FormHelperText>New password</FormHelperText>
                         <CustomTextField
-                          placeholder="New password"
-                          value={userData.newPassword}
-                          name="newPassword"
+                          placeholder="Confirm password"
+                          value={userData.confirmPassword}
+                          name="confirmPassword"
                           onChange={handleChange}
+                          type="password"
                         />
                       </FormControl>
                     </Stack>

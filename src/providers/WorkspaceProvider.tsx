@@ -8,6 +8,7 @@ import { io, Socket } from "socket.io-client";
 import type { Item } from "../types/card";
 import type { ActivityType } from "../components/pages/Activity";
 import type { Message } from "../components/pages/Activity";
+import { useAuth } from "./AuthProvider";
 
 export interface MessagePayload {
   activity: ActivityType;
@@ -25,7 +26,7 @@ export interface ServerToClientEvents {
 export interface ClientToServerEvents {
   update_item: (item: Item) => void;
   store_item: (item: Item) => void;
-  register: (userId: number) => void;
+  register: (email: string) => void;
   join_workspaces: (rooms: string[]) => void;
   send_message: (payload: MessagePayload) => void;
   update_user: (data: any) => void;
@@ -74,7 +75,8 @@ export default function WorkspaceProvider({
 }: {
   children: ReactNode;
 }) {
-  const user = getUserJson();
+  const { user } = useAuth();
+  const storedUser = getUserJson();
   const axios = useAxios();
 
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
@@ -87,7 +89,7 @@ export default function WorkspaceProvider({
 
   const updateActivityCount = async () => {
     const response = await axios.get("/task-activity-count", {
-      headers: { Authorization: `Bearer ${user.auth_token}` },
+      headers: { Authorization: `Bearer ${storedUser.auth_token}` },
     });
 
     const { activity_count } = response.data;
@@ -125,7 +127,7 @@ export default function WorkspaceProvider({
     const getWorkspaces = async () => {
       try {
         const response = await axios.get("/workspaces", {
-          headers: { Authorization: `Bearer ${user.auth_token}` },
+          headers: { Authorization: `Bearer ${storedUser.auth_token}` },
         });
         const { data } = response.data;
         setWorkspaces(data);
@@ -133,8 +135,11 @@ export default function WorkspaceProvider({
         // to do
       }
     };
-    getWorkspaces();
-    updateActivityCount();
+
+    if (user) {
+      getWorkspaces();
+      updateActivityCount();
+    }
 
     const handleReceiveBulkUpdateAsync = async (data: any) => {
       console.log(data);

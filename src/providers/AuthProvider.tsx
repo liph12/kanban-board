@@ -8,6 +8,7 @@ import {
 import useAxios from "../hooks/useAxios";
 import { getUserJson } from "../helpers";
 import PageLoader from "../components/PageLoader";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 export type AuthUser = {
   id: number;
@@ -22,7 +23,7 @@ export type AuthUser = {
 
 type AuthContextType = {
   user: AuthUser;
-  setUserAuth: (user: AuthUser) => void;
+  setUserAuth: (user: AuthUser, auth?: boolean) => void;
   logout: () => void;
 };
 
@@ -57,13 +58,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     authenticateAsync();
   }, []);
 
-  const setUserAuth = (userData: AuthUser) => {
+  const setUserAuth = (userData: AuthUser, auth: boolean = true) => {
     setUser(userData);
+    setLoading(auth);
     localStorage.setItem("auth_user", JSON.stringify(userData));
   };
 
   const logout = () => {
-    setUser(null);
+    setLoading(true);
     localStorage.removeItem("auth_user");
   };
 
@@ -72,9 +74,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, setUserAuth, logout }}>
-      {children}
-    </AuthContext.Provider>
+    <GoogleOAuthProvider clientId="478246977904-cdcr130jpmsddrr54b0jmiknkk80nqof.apps.googleusercontent.com">
+      <AuthContext.Provider value={{ user, setUserAuth, logout }}>
+        {children}
+      </AuthContext.Provider>
+    </GoogleOAuthProvider>
   );
 };
 

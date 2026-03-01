@@ -1,4 +1,11 @@
-import { Box, Container, Typography, Stack, Divider } from "@mui/material";
+import {
+  Box,
+  Container,
+  Typography,
+  Stack,
+  Divider,
+  Avatar,
+} from "@mui/material";
 import type { AxiosError } from "axios";
 import useAxios from "../../hooks/useAxios";
 import { useState } from "react";
@@ -8,7 +15,7 @@ import type { SnackbarCloseReason } from "@mui/material";
 import { useAuth } from "../../providers/AuthProvider";
 import CustomTextFieldSecondary from "../utils/CustomTextFieldSecondary";
 import StyledButton from "../utils/StyledButton";
-import { Google } from "@mui/icons-material";
+import { useGoogleLogin } from "@react-oauth/google";
 
 export default function LoginLayout() {
   const { setUserAuth } = useAuth();
@@ -21,6 +28,7 @@ export default function LoginLayout() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [authGoogleLoading, setAuthGoogleLoading] = useState(false);
 
   const handleSubmitForm = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -71,6 +79,65 @@ export default function LoginLayout() {
       setLoading(false);
     }
   };
+
+  const authGoogleSignIn = () => signInWithGoogle();
+  const authGoogleSignInAsync = async (data: any) => {
+    try {
+      const response = await axios.post(`/google-auth`, data, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const { user, message, auth_token } = response.data;
+      const authUser = { ...user, auth_token: auth_token };
+
+      setUserAuth(authUser);
+      setNotification((prev) => ({
+        ...prev,
+        open: true,
+        message: `${user.name} ${message}`,
+        type: "success",
+      }));
+
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 500);
+    } catch (e) {
+      // to do
+    } finally {
+      setAuthGoogleLoading(false);
+    }
+  };
+
+  const signInWithGoogle = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        setAuthGoogleLoading(true);
+        const userInfo = await axios.get(
+          "https://www.googleapis.com/oauth2/v3/userinfo",
+          {
+            headers: {
+              Authorization: `Bearer ${tokenResponse.access_token}`,
+            },
+          }
+        );
+        const data = userInfo.data;
+        const time = new Date().getTime();
+        const userData = {
+          email: data.email,
+          name: data.name,
+          avatar: data.picture,
+          password: `${time}_${data.email}`,
+          passwordRepeat: `${time}_${data.email}`,
+        };
+
+        await authGoogleSignInAsync(userData);
+      } catch (error) {
+        console.error("Error fetching user info:", error);
+      }
+    },
+  });
 
   const handleCloseNotification = (
     _?: React.SyntheticEvent | Event,
@@ -138,19 +205,21 @@ export default function LoginLayout() {
                   placeholder="Password"
                 />
               </Box>
+              <Box>
+                <StyledButton
+                  fullWidth
+                  type="submit"
+                  variant="contained"
+                  size="medium"
+                  color="primary"
+                  disableElevation
+                  loading={loading}
+                >
+                  Sign In
+                </StyledButton>
+              </Box>
             </Stack>
-            <Box sx={{ mt: 3 }}>
-              <StyledButton
-                fullWidth
-                type="submit"
-                variant="contained"
-                size="medium"
-                color="primary"
-                disableElevation
-                loading={loading}
-              >
-                Login
-              </StyledButton>
+            <Box>
               <Box
                 sx={{
                   display: "flex",
@@ -172,12 +241,14 @@ export default function LoginLayout() {
                 <Divider sx={{ width: "40%", backgroundColor: "gray" }} />
               </Box>
               <StyledButton
-                // loading={authGoogleLoading}
+                loading={authGoogleLoading}
                 type="button"
                 variant="outlined"
                 color="inherit"
-                startIcon={<Google color="info" />}
-                // onClick={signInWithGoogle}
+                startIcon={
+                  <Avatar src="/google.png" sx={{ height: 25, width: 25 }} />
+                }
+                onClick={authGoogleSignIn}
                 disableElevation
                 fullWidth
               >
