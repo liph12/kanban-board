@@ -10,10 +10,11 @@ import type { Item } from "../../types/card";
 import { useParams } from "react-router-dom";
 import { useWorkspaceContext } from "../../providers/WorkspaceProvider";
 import type { MessagePayload } from "../../providers/WorkspaceProvider";
+import ActivityUserSkeleton from "../utils/ActivityUserSkeleton";
 
 export type MessageType = "text" | "file" | "image" | "create" | "progress";
 
-interface ActivityContributor {
+export interface ActivityContributor {
   id: number;
   email: string;
   name: string;
@@ -22,12 +23,14 @@ interface ActivityContributor {
 }
 
 export interface Message {
-  id: number;
+  id: number | string;
   body: string;
   type: MessageType;
   contributor?: ActivityContributor;
+  created_at_timestamp: string;
   time: string;
   timestamp: string;
+  sent: boolean;
 }
 
 export interface ActivityType {
@@ -57,6 +60,7 @@ export default function Activity() {
   const [activities, setActivities] = useState<ActivityType[]>([]);
   const [activityTabValue, setActivityTabValue] = useState(0);
   const [filterValue, setFilterValue] = useState<FilterValue>("all");
+  const [loading, setLoading] = useState(false);
 
   const getTabFilterValue = (value: number): FilterValue => {
     switch (value) {
@@ -96,34 +100,41 @@ export default function Activity() {
     if (socket === null) return;
 
     const fetchActivities = async () => {
-      const response = await axios.get(`/task-activities`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.auth_token}`,
-        },
-      });
-      const { data } = response.data;
-      const formattedActivities = data.map((a: any) => {
-        const activity = a.messages[0];
-        const message: Message = {
-          ...activity,
-          time: activity.created_at,
-        };
+      try {
+        setLoading(true);
+        const response = await axios.get(`/task-activities`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.auth_token}`,
+          },
+        });
+        const { data } = response.data;
+        const formattedActivities = data.map((a: any) => {
+          const activity = a.messages[0];
+          const message: Message = {
+            ...activity,
+            time: activity?.created_at,
+          };
 
-        return {
-          id: a.id,
-          item: a.item,
-          message: message,
-          unread_count: a.unread_count,
-        };
-      });
-      const sortedActivities = formattedActivities.sort(
-        (a: ActivityType, b: ActivityType) =>
-          new Date(b.last_read_at).getTime() -
-          new Date(a.last_read_at).getTime()
-      );
+          return {
+            id: a.id,
+            item: a.item,
+            message: message,
+            unread_count: a.unread_count,
+          };
+        });
+        const sortedActivities = formattedActivities.sort(
+          (a: ActivityType, b: ActivityType) =>
+            new Date(b.last_read_at).getTime() -
+            new Date(a.last_read_at).getTime()
+        );
 
-      setActivities(sortedActivities);
+        setActivities(sortedActivities);
+      } catch (e) {
+        // to do
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchActivities();
@@ -260,24 +271,26 @@ export default function Activity() {
           </Typography>
         </Box>
         <Box sx={{ mx: 1 }}>
-          <AvatarGroup max={4}>
-            {selectedActivity && (
-              <>
-                {workspaces
-                  ?.find(
-                    (w) => w.id === selectedActivity?.item.project?.workspace_id
-                  )
-                  ?.contributors.map((c, k) => (
-                    <Avatar
-                      key={k}
-                      src={c.avatar}
-                      alt={c.name}
-                      sx={{ height: 20, width: 20 }}
-                    />
-                  ))}
-              </>
-            )}
-          </AvatarGroup>
+          {selectedActivity && (
+            <AvatarGroup
+              max={4}
+              sx={{
+                "& .MuiAvatar-root": {
+                  width: 20,
+                  height: 20,
+                  fontSize: 12,
+                },
+              }}
+            >
+              {workspaces
+                ?.find(
+                  (w) => w.id === selectedActivity?.item.project?.workspace_id
+                )
+                ?.contributors.map((c, k) => (
+                  <Avatar key={k} src={c.avatar} alt={c.name} />
+                ))}
+            </AvatarGroup>
+          )}
         </Box>
       </Box>
       <Divider />
@@ -289,20 +302,34 @@ export default function Activity() {
           }}
         >
           <Box sx={{ height: "75vh", overflow: "auto" }}>
-            {activities
-              .filter(
-                (a) => a.message.type === filterValue || filterValue === "all"
-              )
-              .map((a, k) => (
-                <Box
-                  key={k}
-                  component={Link}
-                  to={`/activity/${a.id}`}
-                  sx={{ textDecoration: "none", color: "inherit" }}
-                >
-                  <ActivityUser activity={a} selected={activity_id === a.id} />
-                </Box>
-              ))}
+            {!loading ? (
+              <>
+                {activities
+                  .filter(
+                    (a) =>
+                      a.message.type === filterValue || filterValue === "all"
+                  )
+                  .map((a, k) => (
+                    <Box
+                      key={k}
+                      component={Link}
+                      to={`/activity/${a.id}`}
+                      sx={{ textDecoration: "none", color: "inherit" }}
+                    >
+                      <ActivityUser
+                        activity={a}
+                        selected={activity_id === a.id}
+                      />
+                    </Box>
+                  ))}
+              </>
+            ) : (
+              <>
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+                  <ActivityUserSkeleton key={n} />
+                ))}
+              </>
+            )}
           </Box>
         </Box>
         <Box sx={{ flex: 1 }}>

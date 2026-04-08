@@ -1,4 +1,4 @@
-import { Box, Grid, Tooltip, Typography } from "@mui/material";
+import { Box, Grid, Typography } from "@mui/material";
 import { useWorkspaceContext } from "../../../providers/WorkspaceProvider";
 import { AddRounded, CreateNewFolderOutlined } from "@mui/icons-material";
 import { Link } from "react-router-dom";

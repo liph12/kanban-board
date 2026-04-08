@@ -1,11 +1,10 @@
 import {
   Box,
   Container,
-  TextField,
   Typography,
-  Avatar,
   Stack,
-  Button,
+  Divider,
+  Avatar,
 } from "@mui/material";
 import type { AxiosError } from "axios";
 import useAxios from "../../hooks/useAxios";
@@ -14,6 +13,10 @@ import Notification from "../Notification";
 import type { Notification as NotificationType } from "../../types/notification";
 import type { SnackbarCloseReason } from "@mui/material";
 import { useAuth } from "../../providers/AuthProvider";
+import CustomTextFieldSecondary from "../utils/CustomTextFieldSecondary";
+import StyledButton from "../utils/StyledButton";
+import { ArrowBack } from "@mui/icons-material";
+import { Link } from "react-router-dom";
 
 export default function RegistrationLayout() {
   const axios = useAxios();
@@ -112,28 +115,30 @@ export default function RegistrationLayout() {
             sx={{
               width: 350,
               height: "auto",
-              backgroundColor: "#14293aff",
+              backgroundColor: "#fff",
               borderRadius: 2,
               padding: 5,
               textAlign: "center",
             }}
           >
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                mb: 3,
-              }}
-            >
-              <Avatar
-                src="./task-master-logo.png"
-                sx={{ height: 80, width: 80, backgroundColor: "#fff" }}
-                variant="circular"
-              />
+            <Box sx={{ mb: 2, py: 1.5, backgroundColor: "#fff" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Avatar
+                  src="/trackmeio_dark.png"
+                  variant="square"
+                  sx={{ width: 150, height: "auto" }}
+                />
+              </Box>
+              <Box>
+                <Typography variant="h6">Account Sign Up</Typography>
+              </Box>
             </Box>
-            <Typography variant="h5" sx={{ color: "#fff" }}>
-              Task Master Register
-            </Typography>
             <Stack
               sx={{ mt: 3 }}
               gap={2}
@@ -141,158 +146,105 @@ export default function RegistrationLayout() {
               onSubmit={handleSubmitForm}
             >
               <Box sx={{ textAlign: "left" }}>
-                <Typography color="#fff" variant="body2">
-                  Full Name
-                </Typography>
-                <TextField
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setName(e.target.value)
-                  }
-                  fullWidth
-                  variant="outlined"
-                  size="small"
-                  sx={{
-                    mt: 0.5,
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": {
-                        borderColor: "#999",
-                      },
-                      "&:hover fieldset": {
-                        borderColor: "#999",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#1976d2",
-                      },
-                    },
-                    "& .MuiInputBase-input::placeholder": {
-                      color: "#999",
-                      opacity: 1,
-                    },
-
-                    "& .MuiInputBase-input": {
-                      color: "white",
-                    },
-                  }}
-                />
+                <Box sx={{ textAlign: "left" }}>
+                  <CustomTextFieldSecondary
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setName(e.target.value)
+                    }
+                    fullWidth
+                    variant="outlined"
+                    size="small"
+                    placeholder="Display Name"
+                  />
+                </Box>
               </Box>
               <Box sx={{ textAlign: "left" }}>
-                <Typography color="#fff" variant="body2">
-                  Email address
-                </Typography>
-                <TextField
+                <CustomTextFieldSecondary
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setEmail(e.target.value)
                   }
                   fullWidth
                   variant="outlined"
                   size="small"
-                  sx={{
-                    mt: 0.5,
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": {
-                        borderColor: "#999",
-                      },
-                      "&:hover fieldset": {
-                        borderColor: "#999",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#1976d2",
-                      },
-                    },
-                    "& .MuiInputBase-input::placeholder": {
-                      color: "#999",
-                      opacity: 1,
-                    },
-
-                    "& .MuiInputBase-input": {
-                      color: "white",
-                    },
-                  }}
+                  placeholder="Email address"
                 />
               </Box>
               <Box sx={{ textAlign: "left" }}>
-                <Typography color="#fff" variant="body2">
-                  Password
-                </Typography>
-                <TextField
+                <CustomTextFieldSecondary
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setPassword(e.target.value)
                   }
-                  type="password"
                   fullWidth
                   variant="outlined"
                   size="small"
-                  sx={{
-                    mt: 0.5,
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": {
-                        borderColor: "#999",
-                      },
-                      "&:hover fieldset": {
-                        borderColor: "#999",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#1976d2",
-                      },
-                    },
-                    "& .MuiInputBase-input::placeholder": {
-                      color: "#999",
-                      opacity: 1,
-                    },
-
-                    "& .MuiInputBase-input": {
-                      color: "white",
-                    },
-                  }}
+                  placeholder="Password"
+                  type="password"
                 />
               </Box>
               <Box sx={{ textAlign: "left" }}>
-                <Typography color="#fff" variant="body2">
-                  Confirm Password
-                </Typography>
-                <TextField
+                <CustomTextFieldSecondary
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setPasswordRepeat(e.target.value)
                   }
-                  type="password"
                   fullWidth
                   variant="outlined"
                   size="small"
-                  sx={{
-                    mt: 0.5,
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": {
-                        borderColor: "#999",
-                      },
-                      "&:hover fieldset": {
-                        borderColor: "#999",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#1976d2",
-                      },
-                    },
-                    "& .MuiInputBase-input::placeholder": {
-                      color: "#999",
-                      opacity: 1,
-                    },
-
-                    "& .MuiInputBase-input": {
-                      color: "white",
-                    },
-                  }}
+                  placeholder="Password"
+                  type="password"
                 />
               </Box>
-              <Button
-                type="submit"
-                variant="contained"
-                size="medium"
-                color="success"
-                disableElevation
-                loading={loading}
-              >
-                Submit
-              </Button>
+              <Box>
+                <StyledButton
+                  fullWidth
+                  type="submit"
+                  variant="contained"
+                  size="medium"
+                  color="primary"
+                  disableElevation
+                  loading={loading}
+                >
+                  Submit
+                </StyledButton>
+              </Box>
             </Stack>
+            <Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 2,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Divider sx={{ width: "40%", backgroundColor: "gray" }} />
+                <Typography
+                  sx={{
+                    position: "relative",
+                    margin: "15px 0",
+                  }}
+                  component="div"
+                >
+                  OR
+                </Typography>
+                <Divider sx={{ width: "40%", backgroundColor: "gray" }} />
+              </Box>
+              <Box
+                component={Link}
+                to="/login"
+                sx={{ textDecoration: "none", color: "inherit" }}
+              >
+                <StyledButton
+                  type="button"
+                  variant="outlined"
+                  color="inherit"
+                  disableElevation
+                  fullWidth
+                  startIcon={<ArrowBack />}
+                >
+                  Back to Sign In
+                </StyledButton>
+              </Box>
+            </Box>
           </Box>
         </Box>
       </Container>

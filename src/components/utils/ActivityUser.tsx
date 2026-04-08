@@ -94,7 +94,7 @@ export default function ActivityUser({
               variant="caption"
               fontWeight={unread_count > 0 ? "bold" : 500}
             >
-              {shortenText(message.body, 35)}
+              {shortenText(message.body, 25)}
             </Typography>
           )}
           {unread_count > 0 && (
@@ -105,8 +105,8 @@ export default function ActivityUser({
       <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}>
         <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
           <Avatar
-            src={item.contributor?.avatar}
-            alt={item.contributor?.name}
+            src={message.contributor?.avatar}
+            alt={message.contributor?.name}
             sx={{ height: 20, width: 20 }}
           />
           <Typography

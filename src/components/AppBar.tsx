@@ -1,11 +1,4 @@
-import {
-  Box,
-  Breadcrumbs,
-  Typography,
-  IconButton,
-  Divider,
-  Avatar,
-} from "@mui/material";
+import { Box, Breadcrumbs, Typography, Divider } from "@mui/material";
 import { ManageSearchRounded } from "@mui/icons-material";
 import { useLocation, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -15,11 +8,9 @@ import CustomTextField from "./utils/CustomTextField";
 import { DEFAULT_ROUTES } from "../app-data";
 import type { AutocompleteValue } from "../types/workspace";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../providers/AuthProvider";
 import AccountMenu from "./AccountMenu";
 
 export default function AppBar() {
-  const { user } = useAuth();
   const {
     workspaces,
     selectedActivity,

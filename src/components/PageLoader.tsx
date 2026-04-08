@@ -1,6 +1,6 @@
 import { Box, CircularProgress, Typography } from "@mui/material";
 
-export default function () {
+export default function ({ title = "user data" }: { title?: string }) {
   return (
     <Box
       sx={{
@@ -10,9 +10,9 @@ export default function () {
         alignItems: "center",
       }}
     >
-      <Box>
+      <Box sx={{ textAlign: "center" }}>
         <CircularProgress size={50} sx={{ mb: 3 }} />
-        <Typography>Loading...</Typography>
+        <Typography>Loading {title}...</Typography>
       </Box>
     </Box>
   );

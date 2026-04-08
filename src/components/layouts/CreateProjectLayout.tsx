@@ -79,9 +79,10 @@ export default function CreateProjectLayout({
       </Box>
       <Box sx={{ mb: 2 }}>
         <Typography color="#aaa" variant="body2">
-          Title
+          Title *
         </Typography>
         <CustomTextField
+          required
           placeholder="Project title"
           onChange={(e: ChangeEvent<HTMLInputElement>) =>
             setTitle(e.target.value)

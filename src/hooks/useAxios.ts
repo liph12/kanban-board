@@ -1,12 +1,13 @@
 import { useMemo } from "react";
 import Axios from "axios";
 
-// https://api.taskmastersystem.ph/api/v1/
+const REMOTE_URL = "https://api.trackmeio.com/api";
+// const LOCAL_URL = "http://localhost:8000/api";
 
 const useAxios = () => {
   const axiosInstance = useMemo(() => {
     return Axios.create({
-      baseURL: "http://127.0.0.1:8000/api/v1",
+      baseURL: REMOTE_URL,
       headers: {
         "X-Requested-With": "XMLHttpRequest",
       },

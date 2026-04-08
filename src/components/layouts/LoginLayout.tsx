@@ -16,6 +16,8 @@ import { useAuth } from "../../providers/AuthProvider";
 import CustomTextFieldSecondary from "../utils/CustomTextFieldSecondary";
 import StyledButton from "../utils/StyledButton";
 import { useGoogleLogin } from "@react-oauth/google";
+import { PersonAddRounded } from "@mui/icons-material";
+import { Link } from "react-router-dom";
 
 export default function LoginLayout() {
   const { setUserAuth } = useAuth();
@@ -175,7 +177,24 @@ export default function LoginLayout() {
               textAlign: "center",
             }}
           >
-            <Typography variant="h5">Account Sign In</Typography>
+            <Box sx={{ mb: 2, py: 1.5, backgroundColor: "#fff" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Avatar
+                  src="/trackmeio_dark.png"
+                  variant="square"
+                  sx={{ width: 150, height: "auto" }}
+                />
+              </Box>
+              <Box>
+                <Typography variant="h6">Account Sign In</Typography>
+              </Box>
+            </Box>
             <Stack
               sx={{ mt: 3 }}
               gap={2}
@@ -240,6 +259,22 @@ export default function LoginLayout() {
                 </Typography>
                 <Divider sx={{ width: "40%", backgroundColor: "gray" }} />
               </Box>
+              <Box
+                component={Link}
+                to="/register"
+                sx={{ textDecoration: "none", color: "inherit" }}
+              >
+                <StyledButton
+                  type="button"
+                  variant="outlined"
+                  color="inherit"
+                  disableElevation
+                  fullWidth
+                  startIcon={<PersonAddRounded />}
+                >
+                  Register Here
+                </StyledButton>
+              </Box>
               <StyledButton
                 loading={authGoogleLoading}
                 type="button"
@@ -251,8 +286,9 @@ export default function LoginLayout() {
                 onClick={authGoogleSignIn}
                 disableElevation
                 fullWidth
+                sx={{ mt: 1 }}
               >
-                Sign In with Google
+                Continue with Google
               </StyledButton>
             </Box>
           </Box>

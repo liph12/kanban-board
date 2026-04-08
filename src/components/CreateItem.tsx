@@ -52,6 +52,9 @@ export default function CreateItem({
           name="description"
           value={item.description}
           onChange={onChange}
+          multiline
+          minRows={1}
+          maxRows={3}
         />
       </Box>
       <Grid container spacing={1}>

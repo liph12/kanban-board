@@ -63,9 +63,10 @@ export default function CreateWorkspaceLayout() {
       </Box>
       <Box sx={{ mb: 2 }}>
         <Typography color="#aaa" variant="body2">
-          Title
+          Title *
         </Typography>
         <CustomTextField
+          required
           placeholder="Workspace title"
           onChange={(e: ChangeEvent<HTMLInputElement>) =>
             setTitle(e.target.value)

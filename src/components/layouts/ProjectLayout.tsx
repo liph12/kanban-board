@@ -1,5 +1,12 @@
-import { Box } from "@mui/material";
-import type { Status, Item } from "../../types/card";
+import {
+  Avatar,
+  AvatarGroup,
+  Box,
+  CircularProgress,
+  Divider,
+  Typography,
+} from "@mui/material";
+import { type Status, type Item, type Contributor } from "../../types/card";
 import TaskLayout from "../layouts/TaskLayout";
 import Notification from "../Notification";
 import type { Notification as NotificationType } from "../../types/notification";
@@ -7,10 +14,14 @@ import type { SnackbarCloseReason } from "@mui/material";
 import { useEffect, useState } from "react";
 import useAxios from "../../hooks/useAxios";
 import { getUserJson } from "../../helpers";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useWorkspaceContext } from "../../providers/WorkspaceProvider";
 import type { ActivityType } from "../pages/Activity";
 import type { MessagePayload } from "../../providers/WorkspaceProvider";
+import type { Project } from "../../types/workspace";
+import StyledButton from "../utils/StyledButton";
+import { DownloadRounded } from "@mui/icons-material";
+import Papa from "papaparse";
 
 export type ColorGroup = "inherit" | "info" | "success" | "warning";
 
@@ -66,8 +77,33 @@ export default function ProjectLayout() {
   const [currStatus, setCurrStatus] = useState<Status>("pending");
   const [taskList, setTaskList] = useState<Item[]>([]);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [currProject, setCurrProject] = useState<Project | null>(null);
+  const [contributors, setContributors] = useState<Contributor[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const handleSelectStatus = (status: Status) => setCurrStatus(status);
+
+  const handleDownload = () => {
+    const csv = Papa.unparse({
+      fields: ["Dev Name", "Task", "Description", "Status", "Started", "Ended"],
+      data: taskList.map((item) => [
+        item.contributor?.name,
+        item.title,
+        item.description,
+        item.status,
+        item.startedAt,
+        item.endedAt,
+      ]),
+    });
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${currProject?.title}.csv`;
+    link.click();
+  };
 
   const updateItem = async (id: number, status: Status): Promise<Item> => {
     const response = await axios.put(
@@ -133,25 +169,27 @@ export default function ProjectLayout() {
         };
       }
 
-      setTaskList((prev) => {
-        let updated;
+      if (activity.item.project?.id === project_id) {
+        setTaskList((prev) => {
+          let updated;
 
-        const found = prev.find((t) => t.id === item.id);
+          const found = prev.find((t) => t.id === item.id);
 
-        if (found) {
-          updated = prev.map((t) => (t.id === item.id ? item : t));
-        } else {
-          updated = [...prev, item];
-        }
+          if (found) {
+            updated = prev.map((t) => (t.id === item.id ? item : t));
+          } else {
+            updated = [...prev, item];
+          }
 
-        updated.sort((a, b) => {
-          const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
-          const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
-          return dateB - dateA;
+          updated.sort((a, b) => {
+            const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+            const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+            return dateB - dateA;
+          });
+
+          return updated;
         });
-
-        return updated;
-      });
+      }
     };
 
     socket.on("receive_message", handleReceiveMessage);
@@ -159,25 +197,32 @@ export default function ProjectLayout() {
     return () => {
       socket.off("receive_message", handleReceiveMessage);
     };
-  }, [socket]);
+  }, [socket, project_id]);
 
   useEffect(() => {
     const fetchTasksAcitivty = async () => {
-      const response = await axios.get(`/task-activities/${project_id}`, {
-        headers: {
-          Authorization: `Bearer ${user.auth_token}`,
-        },
-      });
-      const activity = response.data?.data;
+      try {
+        setLoading(true);
+        const response = await axios.get(`/task-activities/${project_id}`, {
+          headers: {
+            Authorization: `Bearer ${user.auth_token}`,
+          },
+        });
+        const activity = response.data?.data;
 
-      if (!activity) return;
+        if (!activity) return;
 
-      const items: Item[] = activity.map((a: ActivityType) => ({
-        ...a.item,
-        unread_count: a.unread_count,
-      }));
+        const items: Item[] = activity.map((a: ActivityType) => ({
+          ...a.item,
+          unread_count: a.unread_count,
+        }));
 
-      setTaskList(items);
+        setTaskList(items);
+      } catch (e) {
+        // to do
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchTasksAcitivty();
@@ -187,16 +232,22 @@ export default function ProjectLayout() {
     if (workspace_id) {
       const workspace = workspaces?.find((w) => w.id === workspace_id);
       if (workspace) {
+        const project = workspace.projects.find((p) => p.id === project_id);
         const contributor = workspace.contributors.find(
           (c) => c.email === user.email
         );
         const owner = workspace.owner.email === user.email;
         const _isAdmin = contributor?.permission === "admin" || owner;
 
+        if (project) {
+          setCurrProject(project);
+        }
+
+        setContributors(workspace.contributors);
         setIsAdmin(_isAdmin);
       }
     }
-  }, [workspace_id, workspaces]);
+  }, [workspace_id, workspaces, project_id]);
 
   return (
     <>
@@ -205,37 +256,93 @@ export default function ProjectLayout() {
         handleClose={handleCloseNotification}
       />
       <Box>
-        <Box sx={{ overflowX: "auto" }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 1,
+          }}
+        >
+          <Box sx={{ display: "flex", gap: 1, alignItems: "baseline" }}>
+            <Typography variant="h4">{currProject?.title}</Typography>
+            <Typography
+              variant="h6"
+              color="info"
+              component={Link}
+              to={`/workspace/${workspace_id}`}
+              sx={{ textDecoration: "none" }}
+            >
+              #{currProject?.workspace_title}
+            </Typography>
+          </Box>
+          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+            <AvatarGroup max={5}>
+              {contributors.map((c) => (
+                <Avatar src={c.avatar} sx={{ height: 20, width: 20 }} />
+              ))}
+            </AvatarGroup>
+            <Divider sx={{ height: 20 }} orientation="vertical" />
+            <StyledButton
+              variant="outlined"
+              size="small"
+              startIcon={<DownloadRounded fontSize="small" />}
+              onClick={handleDownload}
+            >
+              Download
+            </StyledButton>
+          </Box>
+        </Box>
+        <Box sx={{ overflowX: "auto", height: "75vh" }}>
           <Box
             sx={{
               display: "flex",
               gap: 3,
-              alignItems: "flex-start",
+              alignItems: loading ? "center" : "flex-start",
             }}
           >
             {project_id && (
               <>
-                {taskGroups.map((task, key) => {
-                  const { label, bgColor, color, status } = task;
+                {loading ? (
+                  <Box
+                    sx={{
+                      height: "60vh",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      width: "100%",
+                    }}
+                  >
+                    <Box sx={{ textAlign: "center" }}>
+                      <CircularProgress size={30} sx={{ mb: 2 }} />
+                      <Typography>Loading project items...</Typography>
+                    </Box>
+                  </Box>
+                ) : (
+                  <>
+                    {taskGroups.map((task, key) => {
+                      const { label, bgColor, color, status } = task;
 
-                  return (
-                    <TaskLayout
-                      key={key}
-                      isAdmin={isAdmin}
-                      label={label}
-                      bgColor={bgColor}
-                      color={color}
-                      currStatus={currStatus}
-                      taskList={taskList}
-                      status={status}
-                      projectId={project_id}
-                      handleSelectStatus={handleSelectStatus}
-                      handleUpdateItemStatus={handleUpdateItemStatus}
-                      setNotification={setNotification}
-                      setTaskList={setTaskList}
-                    />
-                  );
-                })}
+                      return (
+                        <TaskLayout
+                          key={key}
+                          isAdmin={isAdmin}
+                          label={label}
+                          bgColor={bgColor}
+                          color={color}
+                          currStatus={currStatus}
+                          taskList={taskList}
+                          status={status}
+                          projectId={project_id}
+                          handleSelectStatus={handleSelectStatus}
+                          handleUpdateItemStatus={handleUpdateItemStatus}
+                          setNotification={setNotification}
+                          setTaskList={setTaskList}
+                        />
+                      );
+                    })}
+                  </>
+                )}
               </>
             )}
           </Box>

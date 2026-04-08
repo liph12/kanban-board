@@ -144,7 +144,10 @@ export default function ListCard({
             sx={{ height: 20, width: 20 }}
           />
           <Typography variant="caption" component="div">
-            {shortenText(item.contributor?.name ?? "", 13)}
+            {shortenText(
+              item.contributor?.name ?? "",
+              item.status === "pending" ? 10 : 13
+            )}
           </Typography>
         </Box>
       </Box>

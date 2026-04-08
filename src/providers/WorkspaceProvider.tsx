@@ -9,6 +9,7 @@ import type { Item } from "../types/card";
 import type { ActivityType } from "../components/pages/Activity";
 import type { Message } from "../components/pages/Activity";
 import { useAuth } from "./AuthProvider";
+import PageLoader from "../components/PageLoader";
 
 export interface MessagePayload {
   activity: ActivityType;
@@ -86,6 +87,7 @@ export default function WorkspaceProvider({
     null
   );
   const [activityCount, setActivityCount] = useState<number>(0);
+  const [loading, setLoading] = useState(false);
 
   const updateActivityCount = async () => {
     const response = await axios.get("/task-activity-count", {
@@ -136,9 +138,15 @@ export default function WorkspaceProvider({
       }
     };
 
+    const getBulkInitializeAsync = async () => {
+      setLoading(true);
+      await getWorkspaces();
+      await updateActivityCount();
+      setLoading(false);
+    };
+
     if (user) {
-      getWorkspaces();
-      updateActivityCount();
+      getBulkInitializeAsync();
     }
 
     const handleReceiveBulkUpdateAsync = async (data: any) => {
@@ -154,6 +162,10 @@ export default function WorkspaceProvider({
       socket.off("receive_user_update", handleReceiveBulkUpdateAsync);
     };
   }, [socket]);
+
+  if (loading) {
+    return <PageLoader title="preparing your workspace" />;
+  }
 
   return (
     <WorkspaceContext.Provider

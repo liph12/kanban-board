@@ -1,4 +1,4 @@
-import { Box, Typography, Badge, IconButton } from "@mui/material";
+import { Box, Typography, Badge, IconButton, Avatar } from "@mui/material";
 import {
   ChevronRight,
   ExpandMoreRounded,
@@ -15,7 +15,6 @@ export default function SideBar() {
   const location = useLocation();
   const currentPath = location.pathname;
   const [routes, setRoutes] = useState([...DEFAULT_ROUTES]);
-  const projects = workspaces?.flatMap((w) => w.projects);
 
   const handleExpand = (path: string) =>
     setRoutes((prev) =>
@@ -29,6 +28,7 @@ export default function SideBar() {
         borderRight: "0.5px solid rgb(53, 52, 52)",
         width: 300,
         height: "100vh",
+        overflowY: "auto",
       }}
     >
       <Box
@@ -36,9 +36,16 @@ export default function SideBar() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          py: 1,
         }}
       >
-        <Box></Box>
+        <Box sx={{ ml: 2 }}>
+          <Avatar
+            src="/trackmeio.png"
+            variant="square"
+            sx={{ width: 100, height: "auto" }}
+          />
+        </Box>
         <IconButton>
           <AutoAwesomeMosaicOutlined sx={{ color: "#aaa" }} />
         </IconButton>
@@ -136,45 +143,56 @@ export default function SideBar() {
                       }}
                     >
                       <Box>
-                        {projects?.map((p) => {
-                          const path = `/workspace/${p.workspace_id}/${p.id}`;
-                          const _active = currentPath === path;
+                        {workspaces?.map((w) => (
+                          <Box>
+                            <Typography variant="caption" color="#aaa">
+                              {w.title}
+                            </Typography>
+                            {w.projects?.map((p) => {
+                              const path = `/workspace/${p.workspace_id}/${p.id}`;
+                              const _active = currentPath === path;
 
-                          return (
-                            <Box
-                              component={Link}
-                              to={path}
-                              key={p.id}
-                              sx={{
-                                display: "flex",
-                                gap: 1,
-                                alignItems: "center",
-                                textDecoration: "none",
-                                px: 1,
-                                py: 1,
-                                width: "auto",
-                                cursor: "pointer",
-                                backgroundColor: _active
-                                  ? "#333"
-                                  : "transparent",
-                                ":hover": {
-                                  backgroundColor: "#333",
-                                },
-                              }}
-                            >
-                              <SourceOutlined
-                                sx={{ color: _active ? "info.main" : "#ccc" }}
-                                fontSize="small"
-                              />
-                              <Typography
-                                variant="body2"
-                                sx={{ color: _active ? "info.main" : "#ccc" }}
-                              >
-                                {p.title}
-                              </Typography>
-                            </Box>
-                          );
-                        })}
+                              return (
+                                <Box
+                                  component={Link}
+                                  to={path}
+                                  key={p.id}
+                                  sx={{
+                                    display: "flex",
+                                    gap: 1,
+                                    alignItems: "center",
+                                    textDecoration: "none",
+                                    px: 1,
+                                    py: 1,
+                                    width: "auto",
+                                    cursor: "pointer",
+                                    backgroundColor: _active
+                                      ? "#333"
+                                      : "transparent",
+                                    ":hover": {
+                                      backgroundColor: "#333",
+                                    },
+                                  }}
+                                >
+                                  <SourceOutlined
+                                    sx={{
+                                      color: _active ? "info.main" : "#ccc",
+                                    }}
+                                    fontSize="small"
+                                  />
+                                  <Typography
+                                    variant="body2"
+                                    sx={{
+                                      color: _active ? "info.main" : "#ccc",
+                                    }}
+                                  >
+                                    {p.title}
+                                  </Typography>
+                                </Box>
+                              );
+                            })}
+                          </Box>
+                        ))}
                       </Box>
                     </Box>
                   )}

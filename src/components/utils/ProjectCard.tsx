@@ -28,7 +28,7 @@ export default function ProjectCard({
       <Typography fontWeight="bold">{title}</Typography>
       <Divider sx={{ my: 1 }} />
       <Typography variant="body2">
-        {shortenText(description, 55) ?? "No description."}
+        {shortenText(description ?? "No description.", 55)}
       </Typography>
       <Box sx={{ position: "absolute", bottom: 5, right: 5 }}>
         <Link to={`/workspace/${workspaceId}/${id}`}>
